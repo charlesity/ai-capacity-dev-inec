@@ -233,45 +233,13 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 ```
 
-## Step 10. Retrieve Relevant Chunks
-
-### Explanation
-
-
-```python
-with torch.no_grad():
-    ...
-```
-
-## Step 11. Run BERT Question Answering
-
-### Explanation
-The tokenizer prepares both the question and the retrieved context for the BERT model. The model predicts where the answer starts and ends within the context, and those tokens are decoded into readable text.
-
-```python
-inputs = tokenizer(...)
-```
-
-## Step 12. Display Answers
-
-### Explanation
-If a valid answer span is found, it is displayed to the user. Otherwise, a friendly message indicates that no answer could be extracted.
-
-```python
-if extracted_string.strip() and start_idx < end_idx:
-    ...
-```
-
-## Step 13. Execute the Complete Chat Loop
+## Step 10. Execute the Complete Chat Loop
 
 ### Explanation
 This final section combines all the previous steps into a working chatbot. It accepts the user's question, retrieves relevant document chunks, performs BERT question answering, displays the answer, and stores the conversation history.
 
 ```python
 # Complete chat loop from the application
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
 
 if texts is None:
     st.info("Please add PDF documents to your local `data/` directory and refresh the app.")
@@ -320,7 +288,7 @@ else:
         st.session_state.messages.append({"role": "assistant", "content": answer})
 ```
 
-## Step 14. Run the Application
+## Step 11. Run the Application
 Start the Streamlit development server using the following command. Open the local URL displayed in the terminal, place your PDF documents into the `data` folder, refresh the application, and begin asking questions.
 
 ```bash
