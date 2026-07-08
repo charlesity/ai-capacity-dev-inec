@@ -246,7 +246,7 @@ with tab2:
 -   Saves trained parameters.
 -   Displays learning curves.
 
-## 6. Testing Tab
+## 6. Explaining Key Code Concepts from previous blocks
 
 Allows users to upload and classify a document.
 
