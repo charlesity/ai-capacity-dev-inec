@@ -109,28 +109,77 @@ Loads the dataset, trains the network, records metrics and saves the
 model.
 
 ``` python
-dataset = ImageFolder(root=DATA_DIR, transform=train_transforms)
-loader = DataLoader(dataset, batch_size=2, shuffle=True)
+with tab1:
+    st.header("Training Settings")
+    epochs = st.slider("Select Training Epochs", min_value=5, max_value=50, value=20, step=5)
+    if st.button("Start Training"):
+        with st.spinner("Training model with on-the-fly augmentations..."):
+            # Load dataset
+            dataset = ImageFolder(root=DATA_DIR, transform=train_transforms)
+            classes = dataset.classes  # ['authentic', 'tampered']
+            st.session_state['classes'] = classes
 
-model = get_model().to(DEVICE)
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.AdamW(model.fc.parameters(), lr=1e-3)
-```
+            # Using small batch size because total dataset size = 10 images
+            loader = DataLoader(dataset, batch_size=2, shuffle=True)
 
-Training loop:
+            model = get_model().to(DEVICE)
+            criterion = nn.CrossEntropyLoss()
+            optimizer = optim.AdamW(model.fc.parameters(), lr=1e-3)
 
-``` python
-for epoch in range(epochs):
-    model.train()
+            # Tracking loss for plotting
+            loss_history = []
+            acc_history = []
 
-    for images, labels in loader:
-        images, labels = images.to(DEVICE), labels.to(DEVICE)
+            # Training loop
+            for epoch in range(epochs):
+                model.train()
+                running_loss = 0.0
+                correct = 0
+                total = 0
 
-        optimizer.zero_grad()
-        outputs = model(images)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
+                for images, labels in loader:
+                    images, labels = images.to(DEVICE), labels.to(DEVICE)
+
+                    optimizer.zero_grad()
+                    outputs = model(images)
+                    loss = criterion(outputs, labels)
+                    loss.backward()
+                    optimizer.step()
+
+                    running_loss += loss.item() * images.size(0)
+                    _, predicted = outputs.max(1)
+                    total += labels.size(0)
+                    correct += predicted.eq(labels).sum().item()
+
+                epoch_loss = running_loss / len(dataset)
+                epoch_acc = (correct / total) * 100
+                loss_history.append(epoch_loss)
+                acc_history.append(epoch_acc)
+
+            # Save weights locally
+            torch.save(model.state_dict(), MODEL_PATH)
+            st.success("Training Complete! Model weights saved successfully.")
+
+            # Plot metrics using Matplotlib
+            fig, ax1 = plt.subplots(figsize=(10, 4))
+
+            color = 'tab:red'
+            ax1.set_xlabel('Epochs')
+            ax1.set_ylabel('Loss', color=color)
+            ax1.plot(range(1, epochs + 1), loss_history, color=color, label='Loss', marker='o')
+            ax1.tick_params(axis='y', labelcolor=color)
+
+            ax2 = ax1.twinx()
+            color = 'tab:blue'
+            ax2.set_ylabel('Accuracy (%)', color=color)
+            ax2.plot(range(1, epochs + 1), acc_history, color=color, label='Accuracy', marker='s')
+            ax2.tick_params(axis='y', labelcolor=color)
+
+            plt.title('Training Progress (Augmented Data Metrics)')
+            fig.tight_layout()
+
+            # Display plot in Streamlit
+            st.pyplot(fig)
 ```
 
 Save model:
@@ -145,6 +194,49 @@ Plot metrics:
 st.pyplot(fig)
 ```
 
+## Inference
+``` python
+with tab2:
+    st.header("Test a Document")
+
+    if not os.path.exists(MODEL_PATH):
+        st.info("Please train the model first in the 'Model Training' tab.")
+    else:
+        uploaded_file = st.file_uploader("Upload a form image to inspect...", type=["png", "jpg", "jpeg"])
+
+        if uploaded_file is not None:
+            # Display uploaded document
+            image = Image.open(uploaded_file).convert("RGB")
+            st.image(image, caption="Uploaded Document", use_container_width=True)
+
+            # Run evaluation
+            if st.button("Analyze Document Integrity"):
+                # Load the trained model architecture and weights
+                model = get_model()
+                model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
+                model.to(DEVICE)
+                model.eval()
+
+                # Preprocess uploaded image
+                tensor_img = infer_transforms(image).unsqueeze(0).to(DEVICE)
+
+                with torch.no_grad():
+                    outputs = model(tensor_img)
+                    probabilities = torch.softmax(outputs, dim=1)
+                    confidence, prediction = torch.max(probabilities, dim=1)
+
+                # Fetch target label class names dynamically
+                class_names = st.session_state.get('classes', ['authentic', 'tampered'])
+                result = class_names[prediction.item()]
+                conf_score = confidence.item() * 100
+
+                # Visual readout based on prediction result
+                if result == 'authentic':
+                    st.success(f"✅ Document Verified: **Authentic** ({conf_score:.2f}% Confidence)")
+                else:
+                    st.error(f"🚨 Security Alert: **Tampered/Modified** ({conf_score:.2f}% Confidence)")
+```
+
 **Explanation**
 
 -   Loads images.
@@ -154,7 +246,7 @@ st.pyplot(fig)
 -   Saves trained parameters.
 -   Displays learning curves.
 
-## 6. Testing Tab
+## 6. Explaining Key Code Concepts from previous blocks
 
 Allows users to upload and classify a document.
 
