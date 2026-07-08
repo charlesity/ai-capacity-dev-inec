@@ -6,6 +6,10 @@ This guide explains the code section by section.
 
 ## Note: This code is not meant to be written in app.py file
 - Open app.py file in your favourite Code Editor and follow the steps.
+- run the following code in cmd/terminal
+``` python
+pip install torch torchvision streamlit matplotlib pillow
+```
 ## 1. Import Libraries
 
 These libraries provide file handling, UI, deep learning, datasets,
