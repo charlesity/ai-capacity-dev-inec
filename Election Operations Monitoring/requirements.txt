@@ -1,0 +1,30 @@
+# Core Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.14.0
+
+# Dashboard Framework
+streamlit>=1.28.0
+streamlit-option-menu>=0.3.6
+
+# Development & Deployment
+watchdog>=3.0.0  # For file watching in real-time mode
+python-dotenv>=1.0.0  # For environment variables
+pyngrok>=6.0.0  # For Colab deployment
+
+# Data Processing Utilities
+scikit-learn>=1.3.0  # For advanced analytics
+scipy>=1.11.0  # For statistical tests
+
+# Optional: Database connectors (for production)
+# psycopg2-binary>=2.9.0
+# sqlalchemy>=2.0.0
+# pymongo>=4.5.0
+
+# Optional: Advanced analytics
+# statsmodels>=0.14.0
+# prophet>=1.1.0
