@@ -111,7 +111,7 @@ model.
 with tab1:
     st.header("Training Settings")
     epochs = st.slider("Select Training Epochs", min_value=5, max_value=50, value=20, step=5)
-
+``` python
     if st.button("Start Training"):
         with st.spinner("Training model with on-the-fly augmentations..."):
             # Load dataset
