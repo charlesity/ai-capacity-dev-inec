@@ -108,10 +108,10 @@ tab1, tab2 = st.tabs(["🏋️‍♂️ Model Training", "🔍 Document Testing"
 Loads the dataset, trains the network, records metrics and saves the
 model.
 
+``` python
 with tab1:
     st.header("Training Settings")
     epochs = st.slider("Select Training Epochs", min_value=5, max_value=50, value=20, step=5)
-``` python
     if st.button("Start Training"):
         with st.spinner("Training model with on-the-fly augmentations..."):
             # Load dataset
